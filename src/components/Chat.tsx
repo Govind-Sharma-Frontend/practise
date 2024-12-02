@@ -13,7 +13,7 @@ export default function Chat() {
     socket = io(`https://govind-practise.vercel.app`, {
       path: "/api/socket",
       addTrailingSlash: false,
-      transports: ["websocket", "polling"],
+      // transports: ["websocket", "polling"],
     });
 
     socket.on("connect", () => {
