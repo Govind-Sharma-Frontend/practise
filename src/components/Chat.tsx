@@ -31,17 +31,23 @@ export default function Chat() {
 
     socket.on("connect_error", async (err) => {
       console.log(`connect_error due to ${err.message}`);
-      try {
-        // const res = await fetch("http://localhost:3000/api/socket"); // Adjust the URL to match the Socket.IO server's actual URL.
-        const res = await fetch(
-          "https://govind-practise.vercel.app/api/socket"
-        );
+      // try {
+      //   // const res = await fetch("http://localhost:3000/api/socket"); // Adjust the URL to match the Socket.IO server's actual URL.
+      //   const res = await fetch(
+      //     "https://govind-practise.vercel.app/api/socket"
+      //   );
 
-        console.log("res Socket", await res.json());
-      } catch (fetchError) {
-        console.log("Error fetching socket status:", fetchError);
-      }
+      //   console.log("res Socket", await res.json());
+      // } catch (fetchError) {
+      //   console.log("Error fetching socket status:", fetchError);
+      // }
     });
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
   }, []);
 
   const sendMessage = () => {
