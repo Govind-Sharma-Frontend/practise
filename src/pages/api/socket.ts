@@ -30,14 +30,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   res.setHeader('Cache-Control', 'no-store');
   console.log("Starting Socket.IO server on port:", 3000 + 1)
-  // const io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(3000 + 1)
-  const io = new Server(res.socket.server, {
-    path: "/api/socket",
-    cors: {
-      origin: "*", // Adjust as needed for security
-      methods: ["GET", "POST"],
-    },
-  });
+  const io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(3000 + 1)
+
   io.on("connect", socket => {
     const _socket = socket
     console.log("socket connect", socket.id)
