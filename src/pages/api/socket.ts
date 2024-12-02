@@ -30,11 +30,19 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   console.log("Starting Socket.IO server on port:", 3000 + 1)
   const io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(3000 + 1)
+  // const io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(3000);
 
   io.on("connect", socket => {
     const _socket = socket
     console.log("socket connect", socket.id)
     _socket.broadcast.emit("welcome", `Welcome ${_socket.id}`)
+
+    socket.on("message", (message) => {
+      console.log(`Message received: ${message}`);
+      const response = { id: socket.id, message };
+      io.emit("message", response); // Broadcast to all clients
+    });
+
     socket.on("disconnect", async () => {
       console.log("socket disconnect")
     })
@@ -43,3 +51,4 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.socket.server.io = io
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${3000 + 1}` })
 }
+
