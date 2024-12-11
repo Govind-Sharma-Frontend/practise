@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "formidable": "^3.5.2",
     "gsap": "^3.12.5",
     "lottie-react": "^2.4.0",
