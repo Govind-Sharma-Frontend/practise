@@ -1,62 +1,19 @@
-import CryptoJS from "crypto-js";
 import { useEffect, useState } from "react";
 
-// Function to derive the key (must match backend logic)
-function deriveKey(sharedSecret: string): CryptoJS.lib.WordArray {
-  return CryptoJS.SHA256(sharedSecret); // Generate 32-byte key
-}
-
-const sharedSecret = "my256bitsharedkey"; // Shared secret known to both backend and frontend
-const secretKey = deriveKey(sharedSecret);
-
-console.log(
-  "Derived Frontend Secret Key (Hex):",
-  secretKey.toString(CryptoJS.enc.Hex)
-);
-
-// Function to decrypt the encrypted text
-function decrypt(encryptedText: string): string | null {
-  try {
-    // Split the IV and encrypted data
-    const [ivHex, encryptedHex] = encryptedText.split(":");
-    if (!ivHex || !encryptedHex) {
-      throw new Error("Invalid encrypted text format");
-    }
-
-    const iv = CryptoJS.enc.Hex.parse(ivHex);
-    const encryptedData = CryptoJS.enc.Hex.parse(encryptedHex); // Parse ciphertext as Hex
-
-    console.log("Frontend IV (Hex):", ivHex);
-    console.log("Frontend Encrypted Data (Hex):", encryptedHex);
-
-    // Decrypt using CryptoJS
-    const bytes = CryptoJS.AES.decrypt(
-      { ciphertext: encryptedData },
-      secretKey,
-      {
-        iv: iv,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7, // Ensure PKCS7 padding
-      }
-    );
-
-    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-    if (!decrypted) {
-      throw new Error("Decryption resulted in invalid UTF-8 data");
-    }
-
-    return decrypted;
-  } catch (error) {
-    console.error("Decryption error:", error);
-    return null;
-  }
-}
+import { decrypt, encrypt } from "@/utils";
 
 const GetEncryptData = () => {
   const [apiData, setApiData] = useState<{
     firstName: string;
     lastName: string;
   }>({ firstName: "", lastName: "" });
+
+  const [responseApiData, setResponseApiData] = useState<{
+    firstName: string;
+    lastName: string;
+    sirName: string;
+  }>({ firstName: "", lastName: "", sirName: "" });
+
   useEffect(() => {
     async function fetchAndDecrypt(): Promise<void> {
       try {
@@ -73,9 +30,8 @@ const GetEncryptData = () => {
         }
 
         const responseData = await response.json();
-        console.log("Response Data:", responseData);
 
-        const decryptedData = decrypt(responseData.encryptDataString);
+        const decryptedData = decrypt(responseData.encryptData);
         if (decryptedData) {
           setApiData(JSON.parse(decryptedData));
         } else {
@@ -86,16 +42,57 @@ const GetEncryptData = () => {
       }
     }
 
-    // Call the function to fetch and decrypt the data
     fetchAndDecrypt();
+  }, []);
+
+  useEffect(() => {
+    async function sendEncryptedData() {
+      const data = { firstName: "Jai", lastName: "Kumar" };
+      const encryptedPayload = encrypt(data);
+
+      try {
+        const response = await fetch(
+          "http://localhost:4001/users/decrypt-data",
+          {
+            method: "POST",
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ encryptedPayload }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const responseData = await response.json();
+
+        const decryptedData = decrypt(responseData.data);
+
+        if (decryptedData) {
+          setResponseApiData(JSON.parse(decryptedData));
+        }
+      } catch (error) {
+        console.error("Error sending data:", error);
+      }
+    }
+
+    sendEncryptedData();
   }, []);
 
   return (
     <div>
-      GetEncryptData
+      Get encrypt data: &nbsp;{apiData.firstName + " " + apiData.lastName}{" "}
       <br />
       <br />
-      {apiData.firstName + " " + apiData.lastName}
+      Api response data: &nbsp;
+      {responseApiData.firstName +
+        " " +
+        responseApiData.lastName +
+        " " +
+        responseApiData.sirName}
     </div>
   );
 };
