@@ -21,7 +21,7 @@ export function decrypt(encryptedText: string): string | null {
         const bytes = CryptoJS.AES.decrypt(
             { ciphertext: encryptedData },
             secretKey,
-            {
+            {   
                 iv: iv,
                 mode: CryptoJS.mode.CBC,
                 padding: CryptoJS.pad.Pkcs7, // Ensure PKCS7 padding
