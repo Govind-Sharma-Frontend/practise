@@ -21,6 +21,8 @@ export async function fetchAndDecrypt(setApiData: Dispatch<SetStateAction<ApiSta
 
         const decryptedData = decrypt(responseData.encryptData);
         if (decryptedData) {
+            console.log('decryptedData', JSON.parse(decryptedData));
+
             setApiData(JSON.parse(decryptedData));
         } else {
             console.error("Failed to decrypt data.");

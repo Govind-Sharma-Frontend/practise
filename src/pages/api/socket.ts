@@ -34,13 +34,21 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   io.on("connect", socket => {
     const _socket = socket
-    console.log("socket connect", socket.id)
     _socket.broadcast.emit("welcome", `Welcome ${_socket.id}`)
 
+    console.log("socket connect", socket.id)
     socket.on("message", (message) => {
       console.log(`Message received: ${message}`);
       const response = { id: socket.id, message };
       io.emit("message", response); // Broadcast to all clients
+    });
+
+    socket.on("private_message", (data) => {
+      const { to, message } = data;
+      io.to(to).emit("receive_message", {
+        from: socket.id,
+        message,
+      });
     });
 
     socket.on("disconnect", async () => {
